@@ -1,4 +1,4 @@
-let currentPageUrl = 'https://swapi.dev/api/people/';
+let currentPageUrl = 'https://rickandmortyapi.com/api/character';
 
 window.onload = async () => {
     try {
@@ -26,18 +26,18 @@ async function loadCharacters(url) {
         responseJson.results.forEach((character) => {
             const card = document.createElement("div")
             card.style.backgroundImage = 
-            `url('https://starwars-visualguide.com/assets/img/characters/${character.url.replace(/\D/g, "")}.jpg')`
-            card.className = "cards"
+            `url(${character.image})`;
+            card.className = "cards";
 
-            const characterNameBG = document.createElement("div")
-            characterNameBG.className = "character-name-bg"
+            const characterNameBG = document.createElement("div");
+            characterNameBG.className = "character-name-bg";
 
-            const characterName = document.createElement("span")
-            characterName.className = "character-name"
-            characterName.innerText = `${character.name}`
+            const characterName = document.createElement("span");
+            characterName.className = "character-name";
+            characterName.innerText = `${character.name}`;
 
-            characterNameBG.appendChild(characterName)
-            card.appendChild(characterNameBG)
+            characterNameBG.appendChild(characterName);
+            card.appendChild(characterNameBG);
 
             card.onclick = () => {
                 const modal = document.getElementById('modal');
@@ -48,50 +48,51 @@ async function loadCharacters(url) {
 
                 const characterImage = document.createElement('div');
                 characterImage.style.backgroundImage = 
-                `url('https://starwars-visualguide.com/assets/img/characters/${character.url.replace(/\D/g, "")}.jpg')`
+                `url(${character.image})`;
                 characterImage.className = 'character-image';
 
                 const name = document.createElement('span');
                 name.className = 'character-details';
                 name.innerText = `Nome: ${character.name}`;
 
-                const characterHeight = document.createElement('span');
-                characterHeight.className = 'character-details';
-                characterHeight.innerText = `Altura: ${convertHeight(character.height)}`;
+                const characterStatus = document.createElement('span');
+                characterStatus.className = 'character-details';
+                characterStatus.innerText = `Status: ${convertStatus(character.status)}`;
 
-                const mass = document.createElement('span');
-                mass.className = 'character-details';
-                mass.innerText = `Peso: ${convertMass(character.mass)}`;
+                const species = document.createElement('span');
+                species.className = 'character-details';
+                species.innerText = `especie: ${convertSpecies(character.species)}`;
 
-                const eyeColor = document.createElement('span');
-                eyeColor.className = 'character-details';
-                eyeColor.innerText = `Cor dos olhos: ${convertEyeColor(character.eye_color)}`
+                const gender = document.createElement('span');
+                gender.className = 'character-details';
+                gender.innerText = `genero: ${convertGender(character.gender)}`;
 
-                const birthYear = document.createElement('span');
-                birthYear.className = 'character-details';
-                birthYear.innerText = `Nascimento: ${convertBirthYear(character.birth_year)}`;
+                const origin = document.createElement('span');
+                origin.className = 'character-details';
+                origin.innerText = `origem: ${character.origin.name === "unknown" ? "desconhecida" : character.origin.name}`;
 
                 modalContent.appendChild(characterImage);
                 modalContent.appendChild(name);
-                modalContent.appendChild(characterHeight);
-                modalContent.appendChild(mass);
-                modalContent.appendChild(eyeColor);
-                modalContent.appendChild(birthYear);
+                modalContent.appendChild(characterStatus);
+                modalContent.appendChild(species);
+                modalContent.appendChild(gender);
+                modalContent.appendChild(origin);
             };
-
-            mainContent.appendChild(card)
+            const mainContent = document.getElementById('main-content');
+            mainContent.appendChild(card);
         });
 
+        // Habilita ou desabilita os botões de acordo com a presença de URLs de próxima e página anterior
         const nextButton = document.getElementById('next-button')
         const backButton = document.getElementById('back-button')
 
-        nextButton.disabled = !responseJson.next
-        backButton.disabled = !responseJson.previous
+        nextButton.disabled = !responseJson.info.next;
+        backButton.disabled = !responseJson.info.prev;
 
-        backButton.style.visibility = responseJson.previous? "visible" : "hidden"
-        nextButton.style.visibility = responseJson.next? "visible" : "hidden"
+        backButton.style.visibility = responseJson.info.prev? "visible" : "hidden";
+        nextButton.style.visibility = responseJson.info.next? "visible" : "hidden";
 
-        currentPageUrl = url
+        currentPageUrl = url;
 
     } catch (error) {
         console.log(error);
@@ -106,7 +107,7 @@ async function loadNextPage() {
         const response = await fetch(currentPageUrl);
         const responseJson = await response.json();
 
-        await loadCharacters(responseJson.next);
+        await loadCharacters(responseJson.info.next);
 
     } catch(error) {
         console.log(error);
@@ -121,7 +122,7 @@ async function loadPreviousPage() {
         const response = await fetch(currentPageUrl);
         const responseJson = await response.json();
 
-        await loadCharacters(responseJson.previous)
+        await loadCharacters(responseJson.info.prev);
 
     } catch(error) {
         console.log(error);
@@ -151,26 +152,36 @@ function convertEyeColor(eyeColor) {
     return cores[eyeColor.toLowerCase()] || eyeColor;
 };
 
-function convertHeight(height){
-    if(height === 'unknown') {
-        return 'desconhecida';
+function convertStatus(status) {
+    const characterStatus = {
+        alive: 'vivo',
+        dead: 'morto',
+        unknown: 'desconhecido'
     };
 
-    return (height / 100).toFixed(2);
-}
-
-function convertMass(mass) {
-    if(mass === 'unknown') {
-        return 'desconhecido';
-    };
-
-    return `${mass} Kg`;
+    return characterStatus[status.toLowerCase()] || status;
 };
 
-function convertBirthYear(birthYear) {
-    if(birthYear === 'unknown') {
-        return 'desconhecido';
-    }
+function convertSpecies(specie) {
+    const characterSpecie = {
+        human: 'humano',
+        alien: 'alienigena',
+        humanoid: 'humanoide',
+        "mythological creature": 'criatura mitologica',
+        disease: 'doença',
+        robot: 'robo',
+        unknown: 'desconhecido'
+    };
 
-    return birthYear;
+    return characterSpecie[specie.toLowerCase()] || specie;
+};
+
+function convertGender(gender){
+    const characterGender = {
+        male: 'macho',
+        female: 'femea',
+        unknown: 'desconhecido'
+    }
+    
+    return characterGender[gender.toLowerCase()] || gender;
 };
